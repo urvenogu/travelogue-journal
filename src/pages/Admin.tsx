@@ -319,6 +319,60 @@ const Admin = () => {
               {saving ? "Saving…" : "Save entry"}
             </Button>
           </form>
+            </TabsContent>
+
+            <TabsContent value="hero">
+              <form onSubmit={saveHero} className="space-y-5">
+                <div>
+                  <Label htmlFor="brand">Brand name</Label>
+                  <Input id="brand" value={heroBrand} onChange={(e) => setHeroBrand(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="eyebrow">Eyebrow (small label above headline)</Label>
+                  <Input
+                    id="eyebrow" value={heroEyebrow}
+                    onChange={(e) => setHeroEyebrow(e.target.value)}
+                    placeholder="A 14-day journal · May 2025"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="headline">Headline *</Label>
+                  <Input
+                    id="headline" required value={heroHeadline}
+                    onChange={(e) => setHeroHeadline(e.target.value)}
+                    placeholder="Across the warm south,"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="italic">Italic word (shown on second line)</Label>
+                  <Input
+                    id="italic" value={heroItalic}
+                    onChange={(e) => setHeroItalic(e.target.value)}
+                    placeholder="slowly"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="intro">Intro paragraph</Label>
+                  <Textarea
+                    id="intro" rows={4} value={heroIntro}
+                    onChange={(e) => setHeroIntro(e.target.value)}
+                    placeholder="Two weeks tracing the Iberian coast…"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="button">Button label *</Label>
+                  <Input
+                    id="button" required value={heroButton}
+                    onChange={(e) => setHeroButton(e.target.value)}
+                    placeholder="Begin the journal"
+                  />
+                </div>
+                <Button type="submit" disabled={savingHero} className="w-full h-12">
+                  {savingHero ? "Saving…" : "Save hero"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </>
