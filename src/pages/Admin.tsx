@@ -202,8 +202,15 @@ const Admin = () => {
 
         <div className="max-w-xl mx-auto px-5 pt-8">
           <p className="eyebrow mb-2">Admin</p>
-          <h1 className="font-serif text-3xl mb-8">New entry</h1>
+          <h1 className="font-serif text-3xl mb-8">Manage</h1>
 
+          <Tabs defaultValue="entry" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="entry">New entry</TabsTrigger>
+              <TabsTrigger value="hero">Hero</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="entry">
           <form onSubmit={save} className="space-y-5">
             <div>
               <Label>Day</Label>
