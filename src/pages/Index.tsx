@@ -56,16 +56,16 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        <title>Fourteen Days — A 14-day travel journal across Iberia</title>
+        <title>Fourteen Days — Chasing Route 66: My First USA Trip from California to Texas</title>
         <meta
           name="description"
-          content="A 14-day travel journal across Portugal and Spain — daily entries, photo galleries, and notes from the road."
+          content="A 14-day Route 66 travel journal from Los Angeles to Fort Worth — daily entries, photo galleries, and notes from the road."
         />
         <link rel="canonical" href="/" />
-        <meta property="og:title" content="Fourteen Days — A travel journal" />
+        <meta property="og:title" content="Fourteen Days — Chasing Route 66" />
         <meta
           property="og:description"
-          content="Two weeks tracing the Iberian coast in words and photographs."
+          content="Two weeks on Route 66 from California to Texas — in words and photographs."
         />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={ogImage} />

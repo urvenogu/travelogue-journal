@@ -377,7 +377,7 @@ const Admin = () => {
                   <Textarea
                     id="intro" rows={4} value={heroIntro}
                     onChange={(e) => setHeroIntro(e.target.value)}
-                    placeholder="Two weeks tracing the Iberian coast…"
+                    placeholder="Two weeks chasing Route 66 from California to Texas…"
                   />
                 </div>
                 <div>
