@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { X, Upload, LogOut } from "lucide-react";
 import type { Day } from "@/types/blog";
@@ -34,6 +35,16 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // hero settings
+  const [heroId, setHeroId] = useState<string | null>(null);
+  const [heroBrand, setHeroBrand] = useState("");
+  const [heroEyebrow, setHeroEyebrow] = useState("");
+  const [heroHeadline, setHeroHeadline] = useState("");
+  const [heroItalic, setHeroItalic] = useState("");
+  const [heroIntro, setHeroIntro] = useState("");
+  const [heroButton, setHeroButton] = useState("");
+  const [savingHero, setSavingHero] = useState(false);
+
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -43,6 +54,20 @@ const Admin = () => {
       }
       const { data } = await supabase.from("days").select("*").order("day_number");
       setDays((data as Day[]) ?? []);
+      const { data: hero } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("setting_key", "hero")
+        .maybeSingle();
+      if (hero) {
+        setHeroId(hero.id);
+        setHeroBrand(hero.brand_name ?? "");
+        setHeroEyebrow(hero.eyebrow ?? "");
+        setHeroHeadline(hero.headline ?? "");
+        setHeroItalic(hero.headline_italic ?? "");
+        setHeroIntro(hero.intro ?? "");
+        setHeroButton(hero.button_label ?? "");
+      }
       setChecking(false);
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
@@ -120,6 +145,34 @@ const Admin = () => {
     navigate("/auth", { replace: true });
   };
 
+  const saveHero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!heroId) {
+      toast.error("Hero settings not loaded");
+      return;
+    }
+    setSavingHero(true);
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .update({
+          brand_name: heroBrand,
+          eyebrow: heroEyebrow || null,
+          headline: heroHeadline,
+          headline_italic: heroItalic || null,
+          intro: heroIntro || null,
+          button_label: heroButton,
+        })
+        .eq("id", heroId);
+      if (error) throw error;
+      toast.success("Hero updated");
+    } catch (err: any) {
+      toast.error(err.message ?? "Save failed");
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
   if (checking) {
     return (
       <main className="min-h-screen flex items-center justify-center">
@@ -149,8 +202,15 @@ const Admin = () => {
 
         <div className="max-w-xl mx-auto px-5 pt-8">
           <p className="eyebrow mb-2">Admin</p>
-          <h1 className="font-serif text-3xl mb-8">New entry</h1>
+          <h1 className="font-serif text-3xl mb-8">Manage</h1>
 
+          <Tabs defaultValue="entry" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="entry">New entry</TabsTrigger>
+              <TabsTrigger value="hero">Hero</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="entry">
           <form onSubmit={save} className="space-y-5">
             <div>
               <Label>Day</Label>
@@ -259,6 +319,60 @@ const Admin = () => {
               {saving ? "Saving…" : "Save entry"}
             </Button>
           </form>
+            </TabsContent>
+
+            <TabsContent value="hero">
+              <form onSubmit={saveHero} className="space-y-5">
+                <div>
+                  <Label htmlFor="brand">Brand name</Label>
+                  <Input id="brand" value={heroBrand} onChange={(e) => setHeroBrand(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="eyebrow">Eyebrow (small label above headline)</Label>
+                  <Input
+                    id="eyebrow" value={heroEyebrow}
+                    onChange={(e) => setHeroEyebrow(e.target.value)}
+                    placeholder="A 14-day journal · May 2025"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="headline">Headline *</Label>
+                  <Input
+                    id="headline" required value={heroHeadline}
+                    onChange={(e) => setHeroHeadline(e.target.value)}
+                    placeholder="Across the warm south,"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="italic">Italic word (shown on second line)</Label>
+                  <Input
+                    id="italic" value={heroItalic}
+                    onChange={(e) => setHeroItalic(e.target.value)}
+                    placeholder="slowly"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="intro">Intro paragraph</Label>
+                  <Textarea
+                    id="intro" rows={4} value={heroIntro}
+                    onChange={(e) => setHeroIntro(e.target.value)}
+                    placeholder="Two weeks tracing the Iberian coast…"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="button">Button label *</Label>
+                  <Input
+                    id="button" required value={heroButton}
+                    onChange={(e) => setHeroButton(e.target.value)}
+                    placeholder="Begin the journal"
+                  />
+                </div>
+                <Button type="submit" disabled={savingHero} className="w-full h-12">
+                  {savingHero ? "Saving…" : "Save hero"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </>

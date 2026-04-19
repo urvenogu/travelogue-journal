@@ -97,6 +97,45 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          brand_name: string
+          button_label: string
+          created_at: string
+          eyebrow: string | null
+          headline: string
+          headline_italic: string | null
+          id: string
+          intro: string | null
+          setting_key: string
+          updated_at: string
+        }
+        Insert: {
+          brand_name?: string
+          button_label?: string
+          created_at?: string
+          eyebrow?: string | null
+          headline: string
+          headline_italic?: string | null
+          id?: string
+          intro?: string | null
+          setting_key?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          button_label?: string
+          created_at?: string
+          eyebrow?: string | null
+          headline?: string
+          headline_italic?: string | null
+          id?: string
+          intro?: string | null
+          setting_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
