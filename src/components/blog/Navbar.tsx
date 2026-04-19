@@ -3,9 +3,16 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const days = Array.from({ length: 14 }, (_, i) => i + 1);
+const ALL_DAYS = Array.from({ length: 14 }, (_, i) => i + 1);
 
-export const Navbar = ({ activeDay }: { activeDay?: number }) => {
+export const Navbar = ({
+  activeDay,
+  availableDays,
+}: {
+  activeDay?: number;
+  availableDays?: number[];
+}) => {
+  const days = availableDays && availableDays.length > 0 ? availableDays : ALL_DAYS;
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
