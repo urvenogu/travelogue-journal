@@ -156,11 +156,11 @@ const Admin = () => {
       const { error } = await supabase
         .from("site_settings")
         .update({
-          brand_name: heroBrand,
-          eyebrow: heroEyebrow || null,
+          brand_name: heroBrand.trim(),
+          eyebrow: heroEyebrow.trim() || null,
           headline: heroHeadline,
-          headline_italic: heroItalic || null,
-          intro: heroIntro || null,
+          headline_italic: heroItalic.trim() || null,
+          intro: heroIntro.trim() || null,
           button_label: heroButton,
         })
         .eq("id", heroId);
