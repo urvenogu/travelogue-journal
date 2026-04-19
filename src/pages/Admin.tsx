@@ -23,6 +23,7 @@ const Admin = () => {
   const [checking, setChecking] = useState(true);
   const [days, setDays] = useState<Day[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [activeTab, setActiveTab] = useState("entry");
 
   // new-entry form
   const [dayId, setDayId] = useState<string>("");
@@ -59,6 +60,7 @@ const Admin = () => {
     const { data } = await supabase.from("days").select("*").order("day_number");
     setDays((data as Day[]) ?? []);
   };
+
   const loadEntries = async () => {
     const { data } = await supabase.from("entries").select("*").order("position");
     setEntries((data as Entry[]) ?? []);
@@ -66,17 +68,23 @@ const Admin = () => {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         navigate("/auth", { replace: true });
         return;
       }
+
       await Promise.all([loadDays(), loadEntries()]);
+
       const { data: hero } = await supabase
         .from("site_settings")
         .select("*")
         .eq("setting_key", "hero")
         .maybeSingle();
+
       if (hero) {
         setHeroId(hero.id);
         setHeroBrand(hero.brand_name ?? "");
@@ -87,24 +95,27 @@ const Admin = () => {
         setHeroButton(hero.button_label ?? "");
         setHeroImageUrl(hero.hero_image_url ?? "");
       }
+
       setChecking(false);
     })();
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) navigate("/auth", { replace: true });
     });
+
     return () => sub.subscription.unsubscribe();
   }, [navigate]);
 
-  // Load day fields when picking from Days tab
   useEffect(() => {
     if (!editDayId) return;
-    const d = days.find((x) => x.id === editDayId);
-    if (d) {
-      setDTitle(d.title ?? "");
-      setDDate(d.date ?? "");
-      setDLocation(d.location ?? "");
-      setDSummary(d.summary ?? "");
-    }
+
+    const day = days.find((item) => item.id === editDayId);
+    if (!day) return;
+
+    setDTitle(day.title ?? "");
+    setDDate(day.date ?? "");
+    setDLocation(day.location ?? "");
+    setDSummary(day.summary ?? "");
   }, [editDayId, days]);
 
   const onUpload = async (file: File) => {
@@ -115,7 +126,7 @@ const Admin = () => {
       const { error } = await supabase.storage.from("entry-images").upload(path, file);
       if (error) throw error;
       const { data } = supabase.storage.from("entry-images").getPublicUrl(path);
-      setImages((arr) => [...arr, data.publicUrl]);
+      setImages((current) => [...current, data.publicUrl]);
       toast.success("Image uploaded");
     } catch (err: any) {
       toast.error(err.message ?? "Upload failed");
@@ -143,25 +154,32 @@ const Admin = () => {
 
   const addUrlImage = () => {
     if (!imageUrl.trim()) return;
-    setImages((arr) => [...arr, imageUrl.trim()]);
+    setImages((current) => [...current, imageUrl.trim()]);
     setImageUrl("");
   };
 
-  const removeImage = (i: number) =>
-    setImages((arr) => arr.filter((_, idx) => idx !== i));
-
-  const reset = () => {
-    setEditingEntryId(null);
-    setTitle(""); setText(""); setVideoUrl("");
-    setImageUrl(""); setImages([]);
+  const removeImage = (index: number) => {
+    setImages((current) => current.filter((_, itemIndex) => itemIndex !== index));
   };
 
-  const save = async (e: React.FormEvent) => {
+  const resetEntryForm = () => {
+    setEditingEntryId(null);
+    setDayId("");
+    setTitle("");
+    setText("");
+    setVideoUrl("");
+    setImageUrl("");
+    setImages([]);
+  };
+
+  const saveEntry = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!dayId) {
       toast.error("Pick a day first");
       return;
     }
+
     setSaving(true);
     try {
       if (editingEntryId) {
@@ -175,6 +193,7 @@ const Admin = () => {
             video_url: videoUrl || null,
           })
           .eq("id", editingEntryId);
+
         if (error) throw error;
         toast.success("Entry updated");
       } else {
@@ -182,6 +201,7 @@ const Admin = () => {
           .from("entries")
           .select("*", { count: "exact", head: true })
           .eq("day_id", dayId);
+
         const { error } = await supabase.from("entries").insert({
           day_id: dayId,
           title,
@@ -190,11 +210,14 @@ const Admin = () => {
           video_url: videoUrl || null,
           position: (count ?? 0) + 1,
         });
+
         if (error) throw error;
         toast.success("Entry saved");
       }
-      reset();
+
+      resetEntryForm();
       await loadEntries();
+      setActiveTab("entries");
     } catch (err: any) {
       toast.error(err.message ?? "Save failed");
     } finally {
@@ -208,41 +231,51 @@ const Admin = () => {
     setTitle(entry.title ?? "");
     setText(entry.text ?? "");
     setVideoUrl(entry.video_url ?? "");
+    setImageUrl("");
     setImages(entry.images ?? []);
+    setActiveTab("entry");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info("Editing entry — switch to 'New entry' tab");
   };
 
   const deleteEntry = async (id: string) => {
     if (!confirm("Delete this entry?")) return;
+
     const { error } = await supabase.from("entries").delete().eq("id", id);
     if (error) {
       toast.error(error.message);
       return;
     }
+
+    if (editingEntryId === id) {
+      resetEntryForm();
+    }
+
     toast.success("Entry deleted");
-    if (editingEntryId === id) reset();
     await loadEntries();
   };
 
   const saveDay = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!editDayId) {
       toast.error("Pick a day first");
       return;
     }
+
     setSavingDay(true);
     try {
       const { error } = await supabase
         .from("days")
         .update({
-          title: dTitle,
+          title: dTitle.trim(),
           date: dDate || null,
           location: dLocation.trim() || null,
           summary: dSummary.trim() || null,
         })
         .eq("id", editDayId);
+
       if (error) throw error;
+
       toast.success("Day updated");
       await loadDays();
     } catch (err: any) {
@@ -263,6 +296,7 @@ const Admin = () => {
       toast.error("Hero settings not loaded");
       return;
     }
+
     setSavingHero(true);
     try {
       const { error } = await supabase
@@ -277,6 +311,7 @@ const Admin = () => {
           hero_image_url: heroImageUrl.trim() || null,
         })
         .eq("id", heroId);
+
       if (error) throw error;
       toast.success("Hero updated");
     } catch (err: any) {
@@ -295,8 +330,8 @@ const Admin = () => {
   }
 
   const dayLabel = (id: string) => {
-    const d = days.find((x) => x.id === id);
-    return d ? `Day ${d.day_number}` : "—";
+    const day = days.find((item) => item.id === id);
+    return day ? `Day ${day.day_number}` : "—";
   };
 
   return (
@@ -305,10 +340,13 @@ const Admin = () => {
         <title>Admin — Manage</title>
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
+
       <main className="min-h-screen pb-24">
         <header className="sticky top-0 z-30 bg-background/90 backdrop-blur border-b border-border">
           <div className="max-w-xl mx-auto px-5 h-14 flex items-center justify-between">
-            <Link to="/" className="font-serif text-lg">Fourteen Days</Link>
+            <Link to="/" className="font-serif text-lg">
+              Fourteen Days
+            </Link>
             <button
               onClick={signOut}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -322,7 +360,7 @@ const Admin = () => {
           <p className="eyebrow mb-2">Admin</p>
           <h1 className="font-serif text-3xl mb-8">Manage</h1>
 
-          <Tabs defaultValue="entry" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-6">
               <TabsTrigger value="entry">{editingEntryId ? "Edit" : "New"}</TabsTrigger>
               <TabsTrigger value="entries">Entries</TabsTrigger>
@@ -330,15 +368,14 @@ const Admin = () => {
               <TabsTrigger value="hero">Hero</TabsTrigger>
             </TabsList>
 
-            {/* NEW / EDIT ENTRY */}
             <TabsContent value="entry">
-              <form onSubmit={save} className="space-y-5">
+              <form onSubmit={saveEntry} className="space-y-5">
                 {editingEntryId && (
                   <div className="flex items-center justify-between rounded-sm border border-border bg-secondary/40 px-3 py-2 text-sm">
                     <span>Editing existing entry</span>
                     <button
                       type="button"
-                      onClick={reset}
+                      onClick={resetEntryForm}
                       className="text-xs text-muted-foreground hover:text-foreground"
                     >
                       Cancel
@@ -349,11 +386,13 @@ const Admin = () => {
                 <div>
                   <Label>Day</Label>
                   <Select value={dayId} onValueChange={setDayId}>
-                    <SelectTrigger><SelectValue placeholder="Select a day" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a day" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {days.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          Day {d.day_number} — {d.title}
+                      {days.map((day) => (
+                        <SelectItem key={day.id} value={day.id}>
+                          Day {day.day_number} — {day.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -363,7 +402,9 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="title">Title *</Label>
                   <Input
-                    id="title" required value={title}
+                    id="title"
+                    required
+                    value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Morning at the harbour"
                   />
@@ -372,7 +413,9 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="text">Text</Label>
                   <Textarea
-                    id="text" rows={6} value={text}
+                    id="text"
+                    rows={6}
+                    value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="Write something. Empty lines = new paragraph."
                   />
@@ -388,29 +431,32 @@ const Admin = () => {
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) onUpload(f);
+                        const file = e.target.files?.[0];
+                        if (file) onUpload(file);
                         e.target.value = "";
                       }}
                     />
                   </label>
+
                   <div className="flex gap-2">
                     <Input
                       placeholder="…or paste an image URL"
                       value={imageUrl}
                       onChange={(e) => setImageUrl(e.target.value)}
                     />
-                    <Button type="button" variant="secondary" onClick={addUrlImage}>Add</Button>
+                    <Button type="button" variant="secondary" onClick={addUrlImage}>
+                      Add
+                    </Button>
                   </div>
 
                   {images.length > 0 && (
                     <div className="grid grid-cols-3 gap-2">
-                      {images.map((src, i) => (
-                        <div key={i} className="relative group">
+                      {images.map((src, index) => (
+                        <div key={index} className="relative group">
                           <img src={src} alt="" className="w-full h-24 object-cover rounded-sm" />
                           <button
                             type="button"
-                            onClick={() => removeImage(i)}
+                            onClick={() => removeImage(index)}
                             className="absolute top-1 right-1 bg-background/90 rounded-full p-1 shadow-soft"
                             aria-label="Remove image"
                           >
@@ -425,7 +471,8 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="video">Video URL (YouTube, optional)</Label>
                   <Input
-                    id="video" value={videoUrl}
+                    id="video"
+                    value={videoUrl}
                     onChange={(e) => setVideoUrl(e.target.value)}
                     placeholder="https://youtube.com/watch?v=…"
                   />
@@ -437,27 +484,26 @@ const Admin = () => {
               </form>
             </TabsContent>
 
-            {/* MANAGE ENTRIES */}
             <TabsContent value="entries">
               {entries.length === 0 ? (
                 <p className="text-muted-foreground italic">No entries yet.</p>
               ) : (
                 <ul className="space-y-2">
-                  {entries.map((e) => (
+                  {entries.map((entry) => (
                     <li
-                      key={e.id}
+                      key={entry.id}
                       className="flex items-center justify-between gap-3 border border-border rounded-sm px-3 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">{dayLabel(e.day_id)}</p>
-                        <p className="font-serif text-base truncate">{e.title}</p>
+                        <p className="text-xs text-muted-foreground">{dayLabel(entry.day_id)}</p>
+                        <p className="font-serif text-base truncate">{entry.title}</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Button
                           type="button"
                           size="icon"
                           variant="ghost"
-                          onClick={() => startEditEntry(e)}
+                          onClick={() => startEditEntry(entry)}
                           aria-label="Edit"
                         >
                           <Pencil className="size-4" />
@@ -466,7 +512,7 @@ const Admin = () => {
                           type="button"
                           size="icon"
                           variant="ghost"
-                          onClick={() => deleteEntry(e.id)}
+                          onClick={() => deleteEntry(entry.id)}
                           aria-label="Delete"
                         >
                           <Trash2 className="size-4" />
@@ -478,17 +524,18 @@ const Admin = () => {
               )}
             </TabsContent>
 
-            {/* DAYS EDITOR */}
             <TabsContent value="days">
               <form onSubmit={saveDay} className="space-y-5">
                 <div>
                   <Label>Day</Label>
                   <Select value={editDayId} onValueChange={setEditDayId}>
-                    <SelectTrigger><SelectValue placeholder="Select a day to edit" /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a day to edit" />
+                    </SelectTrigger>
                     <SelectContent>
-                      {days.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          Day {d.day_number} — {d.title}
+                      {days.map((day) => (
+                        <SelectItem key={day.id} value={day.id}>
+                          Day {day.day_number} — {day.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -498,7 +545,9 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="dtitle">Title *</Label>
                   <Input
-                    id="dtitle" required value={dTitle}
+                    id="dtitle"
+                    required
+                    value={dTitle}
                     onChange={(e) => setDTitle(e.target.value)}
                     disabled={!editDayId}
                   />
@@ -507,7 +556,9 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="ddate">Date</Label>
                   <Input
-                    id="ddate" type="date" value={dDate}
+                    id="ddate"
+                    type="date"
+                    value={dDate}
                     onChange={(e) => setDDate(e.target.value)}
                     disabled={!editDayId}
                   />
@@ -516,7 +567,8 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="dloc">Location</Label>
                   <Input
-                    id="dloc" value={dLocation}
+                    id="dloc"
+                    value={dLocation}
                     onChange={(e) => setDLocation(e.target.value)}
                     placeholder="Las Vegas, NV"
                     disabled={!editDayId}
@@ -526,7 +578,9 @@ const Admin = () => {
                 <div>
                   <Label htmlFor="dsum">Short description</Label>
                   <Textarea
-                    id="dsum" rows={4} value={dSummary}
+                    id="dsum"
+                    rows={4}
+                    value={dSummary}
                     onChange={(e) => setDSummary(e.target.value)}
                     placeholder="A short paragraph that introduces the day."
                     disabled={!editDayId}
@@ -539,53 +593,66 @@ const Admin = () => {
               </form>
             </TabsContent>
 
-            {/* HERO */}
             <TabsContent value="hero">
               <form onSubmit={saveHero} className="space-y-5">
                 <div>
                   <Label htmlFor="brand">Brand name</Label>
                   <Input id="brand" value={heroBrand} onChange={(e) => setHeroBrand(e.target.value)} />
                 </div>
+
                 <div>
                   <Label htmlFor="eyebrow">Eyebrow (small label above headline)</Label>
                   <Input
-                    id="eyebrow" value={heroEyebrow}
+                    id="eyebrow"
+                    value={heroEyebrow}
                     onChange={(e) => setHeroEyebrow(e.target.value)}
                     placeholder="A 14-day journal · May 2025"
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="headline">Headline *</Label>
                   <Input
-                    id="headline" required value={heroHeadline}
+                    id="headline"
+                    required
+                    value={heroHeadline}
                     onChange={(e) => setHeroHeadline(e.target.value)}
                     placeholder="Across the warm south,"
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="italic">Italic word (shown on second line)</Label>
                   <Input
-                    id="italic" value={heroItalic}
+                    id="italic"
+                    value={heroItalic}
                     onChange={(e) => setHeroItalic(e.target.value)}
                     placeholder="slowly"
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="intro">Intro paragraph</Label>
                   <Textarea
-                    id="intro" rows={4} value={heroIntro}
+                    id="intro"
+                    rows={4}
+                    value={heroIntro}
                     onChange={(e) => setHeroIntro(e.target.value)}
                     placeholder="Two weeks chasing Route 66 from California to Texas…"
                   />
                 </div>
+
                 <div>
                   <Label htmlFor="button">Button label *</Label>
                   <Input
-                    id="button" required value={heroButton}
+                    id="button"
+                    required
+                    value={heroButton}
                     onChange={(e) => setHeroButton(e.target.value)}
                     placeholder="Begin the journal"
                   />
                 </div>
+
                 <div className="space-y-3">
                   <Label>Hero background image</Label>
                   {heroImageUrl && (
@@ -601,6 +668,7 @@ const Admin = () => {
                       </button>
                     </div>
                   )}
+
                   <label className="flex items-center justify-center gap-2 w-full h-12 border border-dashed border-border rounded-sm cursor-pointer hover:bg-secondary/50 transition-colors">
                     <Upload className="size-4" />
                     <span className="text-sm">
@@ -611,16 +679,18 @@ const Admin = () => {
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const f = e.target.files?.[0];
-                        if (f) onHeroUpload(f);
+                        const file = e.target.files?.[0];
+                        if (file) onHeroUpload(file);
                         e.target.value = "";
                       }}
                     />
                   </label>
+
                   <p className="text-xs text-muted-foreground">
                     Leave empty to use the default image. Click "Save hero" after uploading.
                   </p>
                 </div>
+
                 <Button type="submit" disabled={savingHero} className="w-full h-12">
                   {savingHero ? "Saving…" : "Save hero"}
                 </Button>
