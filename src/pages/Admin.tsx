@@ -145,6 +145,34 @@ const Admin = () => {
     navigate("/auth", { replace: true });
   };
 
+  const saveHero = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!heroId) {
+      toast.error("Hero settings not loaded");
+      return;
+    }
+    setSavingHero(true);
+    try {
+      const { error } = await supabase
+        .from("site_settings")
+        .update({
+          brand_name: heroBrand,
+          eyebrow: heroEyebrow || null,
+          headline: heroHeadline,
+          headline_italic: heroItalic || null,
+          intro: heroIntro || null,
+          button_label: heroButton,
+        })
+        .eq("id", heroId);
+      if (error) throw error;
+      toast.success("Hero updated");
+    } catch (err: any) {
+      toast.error(err.message ?? "Save failed");
+    } finally {
+      setSavingHero(false);
+    }
+  };
+
   if (checking) {
     return (
       <main className="min-h-screen flex items-center justify-center">
