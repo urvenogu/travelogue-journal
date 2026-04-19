@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { X, Upload, LogOut, Trash2, Pencil } from "lucide-react";
+import { X, Upload, LogOut, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import type { Day, Entry } from "@/types/blog";
 
 const Admin = () => {
@@ -35,6 +36,7 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
 
   // day editor
   const [editDayId, setEditDayId] = useState<string>("");
