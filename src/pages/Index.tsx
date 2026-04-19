@@ -6,19 +6,27 @@ import { TripIntro } from "@/components/blog/TripIntro";
 import { DaySection } from "@/components/blog/DaySection";
 import { Footer } from "@/components/blog/Footer";
 import { useTrip } from "@/hooks/useTrip";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const Index = () => {
   const { data, loading } = useTrip();
+  const { isAdmin } = useIsAdmin();
   const [activeDay, setActiveDay] = useState<number | undefined>();
+
+  // Hide unpublished (empty) days from non-admin visitors
+  const visibleDays = useMemo(
+    () => (isAdmin ? data : data.filter((d) => d.entries.length > 0)),
+    [data, isAdmin]
+  );
 
   // observe day sections to highlight active in nav
   useEffect(() => {
-    if (!data.length) return;
+    if (!visibleDays.length) return;
     const observers: IntersectionObserver[] = [];
     const handler = (n: number) => (entries: IntersectionObserverEntry[]) => {
       if (entries.some((e) => e.isIntersecting)) setActiveDay(n);
     };
-    data.forEach((d) => {
+    visibleDays.forEach((d) => {
       const el = document.getElementById(`day-${d.day_number}`);
       if (!el) return;
       const o = new IntersectionObserver(handler(d.day_number), {
@@ -28,7 +36,7 @@ const Index = () => {
       observers.push(o);
     });
     return () => observers.forEach((o) => o.disconnect());
-  }, [data]);
+  }, [visibleDays]);
 
   // jump to hash after load
   useEffect(() => {
@@ -40,6 +48,10 @@ const Index = () => {
   }, [loading]);
 
   const ogImage = useMemo(() => `${window.location.origin}/og-image.jpg`, []);
+  const availableDayNumbers = useMemo(
+    () => visibleDays.map((d) => d.day_number),
+    [visibleDays]
+  );
 
   return (
     <>
@@ -60,7 +72,7 @@ const Index = () => {
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
 
-      <Navbar activeDay={activeDay} />
+      <Navbar activeDay={activeDay} availableDays={availableDayNumbers} />
       <main>
         <HeroSection />
         <TripIntro />
@@ -68,8 +80,12 @@ const Index = () => {
           <div className="container-editorial py-24 text-center text-muted-foreground">
             Loading the journal…
           </div>
+        ) : visibleDays.length === 0 ? (
+          <div className="container-editorial py-24 text-center text-muted-foreground">
+            New entries are coming soon.
+          </div>
         ) : (
-          data.map((d) => <DaySection key={d.id} day={d} />)
+          visibleDays.map((d) => <DaySection key={d.id} day={d} />)
         )}
       </main>
       <Footer />
