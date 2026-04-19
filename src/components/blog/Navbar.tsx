@@ -37,11 +37,11 @@ export const Navbar = ({
     <header
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-300",
-        "bg-background/85 backdrop-blur border-b border-border"
+        "bg-black/30 backdrop-blur-sm border-b border-white/10"
       )}
     >
       <div className="container-editorial flex items-center justify-between h-16">
-        <Link to="/" className="font-serif text-xl tracking-tight">
+        <Link to="/" className="font-serif text-xl tracking-tight text-white [text-shadow:_0_1px_8px_rgb(0_0_0_/_50%)]">
           Fourteen Days
         </Link>
 
@@ -51,10 +51,10 @@ export const Navbar = ({
               key={n}
               onClick={() => jump(n)}
               className={cn(
-                "px-2.5 py-1.5 text-xs uppercase tracking-wider rounded-sm transition-colors",
+                "px-2.5 py-1.5 text-xs uppercase tracking-wider rounded-sm transition-colors [text-shadow:_0_1px_6px_rgb(0_0_0_/_50%)]",
                 activeDay === n
-                  ? "text-foreground bg-secondary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-white bg-white/20"
+                  : "text-white/80 hover:text-white hover:bg-white/10"
               )}
               aria-current={activeDay === n ? "true" : undefined}
             >
@@ -64,7 +64,7 @@ export const Navbar = ({
         </nav>
 
         <button
-          className="lg:hidden p-2 -mr-2 text-foreground"
+          className="lg:hidden p-2 -mr-2 text-white"
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? "Close menu" : "Open menu"}
         >
