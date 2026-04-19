@@ -26,32 +26,34 @@ export const HeroSection = () => {
         height={1080}
         className="absolute inset-0 size-full object-cover"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/95" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-background/95" />
 
       <div className="relative z-10 h-full flex flex-col">
         <div className="flex-1" />
         <div className="container-editorial pb-16 sm:pb-24 animate-fade-up">
-          {eyebrow && <p className="eyebrow text-foreground/80 mb-4">{eyebrow}</p>}
-          <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl leading-[0.95] max-w-4xl">
-            {headline}
-            {italic && (
-              <>
-                <br />
-                <em className="italic text-primary">{italic}</em>
-              </>
+          <div className="max-w-4xl rounded-2xl bg-black/30 backdrop-blur-sm p-6 sm:p-8 [text-shadow:_0_2px_16px_rgb(0_0_0_/_60%)]">
+            {eyebrow && <p className="eyebrow text-white/90 mb-4">{eyebrow}</p>}
+            <h1 className="font-serif text-5xl sm:text-7xl md:text-8xl leading-[0.95] text-white">
+              {headline}
+              {italic && (
+                <>
+                  <br />
+                  <em className="italic text-primary-foreground/95">{italic}</em>
+                </>
+              )}
+            </h1>
+            {intro && (
+              <p className="mt-6 max-w-xl text-base sm:text-lg text-white/90 leading-relaxed whitespace-pre-line">
+                {intro}
+              </p>
             )}
-          </h1>
-          {intro && (
-            <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed whitespace-pre-line">
-              {intro}
-            </p>
-          )}
-          <button
-            onClick={scrollDown}
-            className="mt-10 inline-flex items-center gap-2 text-sm tracking-wider uppercase border-b border-foreground/40 pb-1 hover:border-foreground transition-colors"
-          >
-            {buttonLabel}
-          </button>
+            <button
+              onClick={scrollDown}
+              className="mt-10 inline-flex items-center gap-2 text-sm tracking-wider uppercase text-white border-b border-white/60 pb-1 hover:border-white transition-colors"
+            >
+              {buttonLabel}
+            </button>
+          </div>
         </div>
       </div>
     </section>
