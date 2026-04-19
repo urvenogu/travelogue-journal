@@ -17,6 +17,7 @@ export type Entry = {
   video_url: string | null;
   caption: string | null;
   position: number;
+  published: boolean;
 };
 
 export type DayWithEntries = Day & { entries: Entry[] };
