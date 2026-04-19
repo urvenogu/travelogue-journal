@@ -498,6 +498,17 @@ const Admin = () => {
                   />
                 </div>
 
+
+                <div className="flex items-center justify-between rounded-sm border border-border px-3 py-3">
+                  <div>
+                    <Label htmlFor="published" className="block">Publish</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {published ? "Visible to everyone" : "Only you can see this"}
+                    </p>
+                  </div>
+                  <Switch id="published" checked={published} onCheckedChange={setPublished} />
+                </div>
+
                 <Button type="submit" disabled={saving} className="w-full h-12">
                   {saving ? "Saving…" : editingEntryId ? "Update entry" : "Save entry"}
                 </Button>
@@ -515,10 +526,27 @@ const Admin = () => {
                       className="flex items-center justify-between gap-3 border border-border rounded-sm px-3 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">{dayLabel(entry.day_id)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">{dayLabel(entry.day_id)}</p>
+                          {!entry.published && (
+                            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">
+                              Draft
+                            </span>
+                          )}
+                        </div>
                         <p className="font-serif text-base truncate">{entry.title}</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => togglePublished(entry)}
+                          aria-label={entry.published ? "Unpublish" : "Publish"}
+                          title={entry.published ? "Unpublish" : "Publish"}
+                        >
+                          {entry.published ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                        </Button>
                         <Button
                           type="button"
                           size="icon"
