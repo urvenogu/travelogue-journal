@@ -6,13 +6,15 @@ export const HeroSection = () => {
   const scrollDown = () =>
     document.getElementById("trip-intro")?.scrollIntoView({ behavior: "smooth" });
 
-  const eyebrow = hero?.eyebrow ?? "A 14-day journal · May 2025";
-  const headline = hero?.headline ?? "Across the warm south,";
-  const italic = hero?.headline_italic ?? "slowly";
-  const intro =
-    hero?.intro ??
-    "Two weeks tracing the Iberian coast — small towns, long lunches, and the kind of light that ruins you for everywhere else.";
-  const buttonLabel = hero?.button_label ?? "Begin the journal";
+  // Once hero is loaded from DB, respect empty values (hide those fields). Only fall back to defaults before load.
+  const isLoaded = hero !== null;
+  const eyebrow = isLoaded ? hero.eyebrow : "A 14-day journal · May 2025";
+  const headline = isLoaded ? hero.headline : "Across the warm south,";
+  const italic = isLoaded ? hero.headline_italic : "slowly";
+  const intro = isLoaded
+    ? hero.intro
+    : "Two weeks tracing the Iberian coast — small towns, long lunches, and the kind of light that ruins you for everywhere else.";
+  const buttonLabel = isLoaded ? hero.button_label : "Begin the journal";
 
   return (
     <section className="relative -mt-16 h-[100svh] min-h-[640px] w-full overflow-hidden">
