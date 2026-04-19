@@ -165,6 +165,7 @@ const Admin = () => {
           headline_italic: heroItalic.trim() || null,
           intro: heroIntro.trim() || null,
           button_label: heroButton,
+          hero_image_url: heroImageUrl.trim() || null,
         })
         .eq("id", heroId);
       if (error) throw error;
