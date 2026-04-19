@@ -37,7 +37,7 @@ export const Navbar = ({
     <header
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-300",
-        "bg-background/85 backdrop-blur border-b border-border"
+        "bg-black/30 backdrop-blur-sm border-b border-white/10"
       )}
     >
       <div className="container-editorial flex items-center justify-between h-16">
