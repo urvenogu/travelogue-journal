@@ -5,7 +5,6 @@ import { VideoBlock } from "./VideoBlock";
 export const EntryCard = ({ entry }: { entry: Entry }) => (
   <article className="py-10 first:pt-0 border-t border-border first:border-t-0">
     <header className="mb-5">
-      {entry.time && <p className="eyebrow mb-2">{entry.time}</p>}
       <h3 className="font-serif text-2xl sm:text-3xl leading-snug">{entry.title}</h3>
     </header>
 
