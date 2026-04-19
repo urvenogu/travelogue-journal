@@ -43,6 +43,8 @@ const Admin = () => {
   const [heroItalic, setHeroItalic] = useState("");
   const [heroIntro, setHeroIntro] = useState("");
   const [heroButton, setHeroButton] = useState("");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroUploading, setHeroUploading] = useState(false);
   const [savingHero, setSavingHero] = useState(false);
 
   useEffect(() => {
