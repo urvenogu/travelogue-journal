@@ -96,6 +96,23 @@ const Admin = () => {
     }
   };
 
+  const onHeroUpload = async (file: File) => {
+    setHeroUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `hero/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("entry-images").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("entry-images").getPublicUrl(path);
+      setHeroImageUrl(data.publicUrl);
+      toast.success("Hero image uploaded — don't forget to save");
+    } catch (err: any) {
+      toast.error(err.message ?? "Upload failed");
+    } finally {
+      setHeroUploading(false);
+    }
+  };
+
   const addUrlImage = () => {
     if (!imageUrl.trim()) return;
     setImages((arr) => [...arr, imageUrl.trim()]);
