@@ -15,12 +15,13 @@ export const HeroSection = () => {
     ? hero.intro
     : "Two weeks tracing the Iberian coast — small towns, long lunches, and the kind of light that ruins you for everywhere else.";
   const buttonLabel = isLoaded ? hero.button_label : "Begin the journal";
+  const bgImage = hero?.hero_image_url || heroImage;
 
   return (
     <section className="relative -mt-16 h-[100svh] min-h-[640px] w-full overflow-hidden">
       <img
-        src={heroImage}
-        alt="Golden hour over a winding coastal road in southern Europe"
+        src={bgImage}
+        alt="Hero background"
         width={1920}
         height={1080}
         className="absolute inset-0 size-full object-cover"
