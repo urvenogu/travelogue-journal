@@ -172,6 +172,7 @@ const Admin = () => {
     setVideoUrl("");
     setImageUrl("");
     setImages([]);
+    setPublished(false);
   };
 
   const saveEntry = async (e: React.FormEvent) => {
@@ -193,6 +194,7 @@ const Admin = () => {
             text: text || null,
             images,
             video_url: videoUrl || null,
+            published,
           })
           .eq("id", editingEntryId);
 
@@ -211,6 +213,7 @@ const Admin = () => {
           images,
           video_url: videoUrl || null,
           position: (count ?? 0) + 1,
+          published,
         });
 
         if (error) throw error;
@@ -235,8 +238,23 @@ const Admin = () => {
     setVideoUrl(entry.video_url ?? "");
     setImageUrl("");
     setImages(entry.images ?? []);
+    setPublished(entry.published ?? false);
     setActiveTab("entry");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const togglePublished = async (entry: Entry) => {
+    const next = !entry.published;
+    const { error } = await supabase
+      .from("entries")
+      .update({ published: next })
+      .eq("id", entry.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(next ? "Published" : "Hidden from visitors");
+    await loadEntries();
   };
 
   const deleteEntry = async (id: string) => {
