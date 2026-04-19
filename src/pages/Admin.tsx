@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { X, Upload, LogOut } from "lucide-react";
 import type { Day } from "@/types/blog";
@@ -34,6 +35,16 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // hero settings
+  const [heroId, setHeroId] = useState<string | null>(null);
+  const [heroBrand, setHeroBrand] = useState("");
+  const [heroEyebrow, setHeroEyebrow] = useState("");
+  const [heroHeadline, setHeroHeadline] = useState("");
+  const [heroItalic, setHeroItalic] = useState("");
+  const [heroIntro, setHeroIntro] = useState("");
+  const [heroButton, setHeroButton] = useState("");
+  const [savingHero, setSavingHero] = useState(false);
+
   useEffect(() => {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -43,6 +54,20 @@ const Admin = () => {
       }
       const { data } = await supabase.from("days").select("*").order("day_number");
       setDays((data as Day[]) ?? []);
+      const { data: hero } = await supabase
+        .from("site_settings")
+        .select("*")
+        .eq("setting_key", "hero")
+        .maybeSingle();
+      if (hero) {
+        setHeroId(hero.id);
+        setHeroBrand(hero.brand_name ?? "");
+        setHeroEyebrow(hero.eyebrow ?? "");
+        setHeroHeadline(hero.headline ?? "");
+        setHeroItalic(hero.headline_italic ?? "");
+        setHeroIntro(hero.intro ?? "");
+        setHeroButton(hero.button_label ?? "");
+      }
       setChecking(false);
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
