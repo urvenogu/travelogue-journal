@@ -105,6 +105,7 @@ export type Database = {
           eyebrow: string | null
           headline: string
           headline_italic: string | null
+          hero_image_url: string | null
           id: string
           intro: string | null
           setting_key: string
@@ -117,6 +118,7 @@ export type Database = {
           eyebrow?: string | null
           headline: string
           headline_italic?: string | null
+          hero_image_url?: string | null
           id?: string
           intro?: string | null
           setting_key?: string
@@ -129,6 +131,7 @@ export type Database = {
           eyebrow?: string | null
           headline?: string
           headline_italic?: string | null
+          hero_image_url?: string | null
           id?: string
           intro?: string | null
           setting_key?: string

@@ -43,6 +43,8 @@ const Admin = () => {
   const [heroItalic, setHeroItalic] = useState("");
   const [heroIntro, setHeroIntro] = useState("");
   const [heroButton, setHeroButton] = useState("");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [heroUploading, setHeroUploading] = useState(false);
   const [savingHero, setSavingHero] = useState(false);
 
   useEffect(() => {
@@ -67,6 +69,7 @@ const Admin = () => {
         setHeroItalic(hero.headline_italic ?? "");
         setHeroIntro(hero.intro ?? "");
         setHeroButton(hero.button_label ?? "");
+        setHeroImageUrl(hero.hero_image_url ?? "");
       }
       setChecking(false);
     })();
@@ -90,6 +93,23 @@ const Admin = () => {
       toast.error(err.message ?? "Upload failed");
     } finally {
       setUploading(false);
+    }
+  };
+
+  const onHeroUpload = async (file: File) => {
+    setHeroUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `hero/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("entry-images").upload(path, file);
+      if (error) throw error;
+      const { data } = supabase.storage.from("entry-images").getPublicUrl(path);
+      setHeroImageUrl(data.publicUrl);
+      toast.success("Hero image uploaded — don't forget to save");
+    } catch (err: any) {
+      toast.error(err.message ?? "Upload failed");
+    } finally {
+      setHeroUploading(false);
     }
   };
 
@@ -162,6 +182,7 @@ const Admin = () => {
           headline_italic: heroItalic.trim() || null,
           intro: heroIntro.trim() || null,
           button_label: heroButton,
+          hero_image_url: heroImageUrl.trim() || null,
         })
         .eq("id", heroId);
       if (error) throw error;
@@ -366,6 +387,41 @@ const Admin = () => {
                     onChange={(e) => setHeroButton(e.target.value)}
                     placeholder="Begin the journal"
                   />
+                </div>
+                <div className="space-y-3">
+                  <Label>Hero background image</Label>
+                  {heroImageUrl && (
+                    <div className="relative">
+                      <img src={heroImageUrl} alt="Hero" className="w-full h-40 object-cover rounded-sm" />
+                      <button
+                        type="button"
+                        onClick={() => setHeroImageUrl("")}
+                        className="absolute top-2 right-2 bg-background/90 rounded-full p-1.5 shadow-soft"
+                        aria-label="Remove hero image"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                  )}
+                  <label className="flex items-center justify-center gap-2 w-full h-12 border border-dashed border-border rounded-sm cursor-pointer hover:bg-secondary/50 transition-colors">
+                    <Upload className="size-4" />
+                    <span className="text-sm">
+                      {heroUploading ? "Uploading…" : heroImageUrl ? "Replace image" : "Upload hero image"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) onHeroUpload(f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to use the default image. Click "Save hero" after uploading.
+                  </p>
                 </div>
                 <Button type="submit" disabled={savingHero} className="w-full h-12">
                   {savingHero ? "Saving…" : "Save hero"}

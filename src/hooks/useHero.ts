@@ -9,6 +9,7 @@ export type HeroSettings = {
   headline_italic: string | null;
   intro: string | null;
   button_label: string;
+  hero_image_url: string | null;
 };
 
 export const useHero = () => {
@@ -19,7 +20,7 @@ export const useHero = () => {
     (async () => {
       const { data } = await supabase
         .from("site_settings")
-        .select("id, brand_name, eyebrow, headline, headline_italic, intro, button_label")
+        .select("id, brand_name, eyebrow, headline, headline_italic, intro, button_label, hero_image_url")
         .eq("setting_key", "hero")
         .maybeSingle();
       setHero((data as HeroSettings | null) ?? null);
