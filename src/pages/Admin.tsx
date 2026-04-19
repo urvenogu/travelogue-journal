@@ -69,6 +69,7 @@ const Admin = () => {
         setHeroItalic(hero.headline_italic ?? "");
         setHeroIntro(hero.intro ?? "");
         setHeroButton(hero.button_label ?? "");
+        setHeroImageUrl(hero.hero_image_url ?? "");
       }
       setChecking(false);
     })();
