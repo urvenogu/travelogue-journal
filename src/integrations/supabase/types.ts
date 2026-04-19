@@ -55,6 +55,7 @@ export type Database = {
           id: string
           images: string[]
           position: number
+          published: boolean
           text: string | null
           time: string | null
           title: string
@@ -68,6 +69,7 @@ export type Database = {
           id?: string
           images?: string[]
           position?: number
+          published?: boolean
           text?: string | null
           time?: string | null
           title: string
@@ -81,6 +83,7 @@ export type Database = {
           id?: string
           images?: string[]
           position?: number
+          published?: boolean
           text?: string | null
           time?: string | null
           title?: string

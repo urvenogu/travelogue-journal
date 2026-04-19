@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { X, Upload, LogOut, Trash2, Pencil } from "lucide-react";
+import { X, Upload, LogOut, Trash2, Pencil, Eye, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import type { Day, Entry } from "@/types/blog";
 
 const Admin = () => {
@@ -35,6 +36,7 @@ const Admin = () => {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [published, setPublished] = useState(false);
 
   // day editor
   const [editDayId, setEditDayId] = useState<string>("");
@@ -170,6 +172,7 @@ const Admin = () => {
     setVideoUrl("");
     setImageUrl("");
     setImages([]);
+    setPublished(false);
   };
 
   const saveEntry = async (e: React.FormEvent) => {
@@ -191,6 +194,7 @@ const Admin = () => {
             text: text || null,
             images,
             video_url: videoUrl || null,
+            published,
           })
           .eq("id", editingEntryId);
 
@@ -209,6 +213,7 @@ const Admin = () => {
           images,
           video_url: videoUrl || null,
           position: (count ?? 0) + 1,
+          published,
         });
 
         if (error) throw error;
@@ -233,8 +238,23 @@ const Admin = () => {
     setVideoUrl(entry.video_url ?? "");
     setImageUrl("");
     setImages(entry.images ?? []);
+    setPublished(entry.published ?? false);
     setActiveTab("entry");
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const togglePublished = async (entry: Entry) => {
+    const next = !entry.published;
+    const { error } = await supabase
+      .from("entries")
+      .update({ published: next })
+      .eq("id", entry.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(next ? "Published" : "Hidden from visitors");
+    await loadEntries();
   };
 
   const deleteEntry = async (id: string) => {
@@ -478,6 +498,17 @@ const Admin = () => {
                   />
                 </div>
 
+
+                <div className="flex items-center justify-between rounded-sm border border-border px-3 py-3">
+                  <div>
+                    <Label htmlFor="published" className="block">Publish</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {published ? "Visible to everyone" : "Only you can see this"}
+                    </p>
+                  </div>
+                  <Switch id="published" checked={published} onCheckedChange={setPublished} />
+                </div>
+
                 <Button type="submit" disabled={saving} className="w-full h-12">
                   {saving ? "Saving…" : editingEntryId ? "Update entry" : "Save entry"}
                 </Button>
@@ -495,10 +526,27 @@ const Admin = () => {
                       className="flex items-center justify-between gap-3 border border-border rounded-sm px-3 py-3"
                     >
                       <div className="min-w-0">
-                        <p className="text-xs text-muted-foreground">{dayLabel(entry.day_id)}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-xs text-muted-foreground">{dayLabel(entry.day_id)}</p>
+                          {!entry.published && (
+                            <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm bg-secondary text-muted-foreground">
+                              Draft
+                            </span>
+                          )}
+                        </div>
                         <p className="font-serif text-base truncate">{entry.title}</p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => togglePublished(entry)}
+                          aria-label={entry.published ? "Unpublish" : "Publish"}
+                          title={entry.published ? "Unpublish" : "Publish"}
+                        >
+                          {entry.published ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                        </Button>
                         <Button
                           type="button"
                           size="icon"
