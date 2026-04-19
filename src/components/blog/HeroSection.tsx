@@ -13,7 +13,7 @@ export const HeroSection = () => {
   const italic = isLoaded ? hero.headline_italic : "slowly";
   const intro = isLoaded
     ? hero.intro
-    : "Two weeks tracing the Iberian coast — small towns, long lunches, and the kind of light that ruins you for everywhere else.";
+    : "Two weeks chasing Route 66 from California to Texas — desert highways, neon motels, and the kind of wide-open light that ruins you for everywhere else.";
   const buttonLabel = isLoaded ? hero.button_label : "Begin the journal";
   const bgImage = hero?.hero_image_url || heroImage;
 
