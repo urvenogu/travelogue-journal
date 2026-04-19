@@ -209,8 +209,8 @@ const Admin = () => {
     setText(entry.text ?? "");
     setVideoUrl(entry.video_url ?? "");
     setImages(entry.images ?? []);
+    setActiveTab("entry");
     window.scrollTo({ top: 0, behavior: "smooth" });
-    toast.info("Editing entry — switch to 'New entry' tab");
   };
 
   const deleteEntry = async (id: string) => {
