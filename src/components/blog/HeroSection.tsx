@@ -18,7 +18,7 @@ export const HeroSection = () => {
   const bgImage = hero?.hero_image_url || heroImage;
 
   return (
-    <section className="relative -mt-16 h-[100svh] min-h-[640px] w-full overflow-hidden">
+    <section className="relative h-[calc(100svh-4rem)] min-h-[640px] w-full overflow-hidden">
       <img
         src={bgImage}
         alt="Hero background"
