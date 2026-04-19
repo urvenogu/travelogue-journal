@@ -9,6 +9,7 @@ export type HeroSettings = {
   headline_italic: string | null;
   intro: string | null;
   button_label: string;
+  hero_image_url: string | null;
 };
 
 export const useHero = () => {
