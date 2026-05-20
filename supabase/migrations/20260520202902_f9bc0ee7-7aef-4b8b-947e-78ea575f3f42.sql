@@ -1,0 +1,1 @@
+UPDATE public.entries SET images = '{}' WHERE EXISTS (SELECT 1 FROM unnest(images) AS img WHERE img LIKE '%unsplash.com%');
